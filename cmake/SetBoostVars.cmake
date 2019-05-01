@@ -1,0 +1,16 @@
+# setting BOOST_ROOT, BOOST_INCLUDEDIR, BOOST_LIBRARYDIR
+
+if(NOT BOOST_VERSION)
+    set(BOOST_VERSION 1.66.0)
+endif()
+string(REPLACE "." "_" REQUIRED_BOOST_VERSION_ ${BOOST_VERSION})
+set(BOOST_ROOT "${PROJECT_SOURCE_DIR}/external/boost_${REQUIRED_BOOST_VERSION_}")
+set(BOOST_INCLUDEDIR "${BOOST_ROOT}")
+if(APPLE)
+  set(BOOST_LIBRARYDIR "${BOOST_ROOT}/${TARGET_ARCH}/lib")
+else()
+  set(BOOST_LIBRARYDIR "${BOOST_ROOT}/${TARGET_ARCH}/${DEPS_BUILD_TYPE}/lib")
+endif()
+message(STATUS "Boost root: ${BOOST_ROOT}")
+message(STATUS "Boost set lib dir: ${BOOST_LIBRARYDIR}")
+message(STATUS "Boost set include dir: ${BOOST_INCLUDEDIR}")
