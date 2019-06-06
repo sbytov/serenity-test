@@ -27,16 +27,18 @@ private:
         int X;
         int Y;
         double Cost;
-        double Dist = std::numeric_limits<double>::max();
-        Cell* From = nullptr;
+        double Dist = { std::numeric_limits<double>::max() };
+        Cell* From = { nullptr };
+        bool Visited = { false };
     };
     Cell cells[N][N];
-    struct CellComparator {
-        bool operator()(const Cell* c1, const Cell* c2) const {
-            return c1->Dist < c2->Dist;
+    using CellDist = std::pair<double, Cell*>;
+    struct CellDistComparator {
+        bool operator()(const CellDist& c1, const CellDist& c2) const {
+            return c1.first > c2.first;
         }
     };
-    std::priority_queue<Cell*, std::vector<Cell*>, CellComparator> pq;
+    std::priority_queue<CellDist, std::vector<CellDist>, CellDistComparator> pq;
 public:
     Labyrinth(const double fields[N][N]) {
         for (auto i = 0; i < N; i++)
@@ -46,8 +48,8 @@ public:
                 cells[i][j] = Cell{ j, i, fields[i][j] };
             }
         }
-        cells[0][0].Dist = 0;
-        pq.push(&cells[0][0]);
+        cells[0][0].Dist = cells[0][0].Cost;;
+        pq.push(std::make_pair(cells[0][0].Dist, &cells[0][0]));
         auto relax = [this, fields](int x, int y, Cell& cur) {
             if (x >= 0 && x < N && y >= 0 && y < N)
             {
@@ -56,23 +58,28 @@ public:
                 {
                     adj.Dist = adj.Cost + cur.Dist;
                     adj.From = &cur;
-                    pq.push(&adj);
+                    pq.push(std::make_pair(adj.Dist, &adj));
                 }
             }
         };
         while (!pq.empty())
         {
-            auto cell = pq.top();
+            auto c = pq.top();
+            auto cell = pq.top().second;
             pq.pop();
-            int x = cell->X, y = cell->Y;
-            relax(x + 1, y, *cell);
-            relax(x, y + 1, *cell);
-            relax(x - 1, y, *cell);
-            relax(x, y - 1, *cell);
-            relax(x - 1, y - 1, *cell);
-            relax(x + 1, y + 1, *cell);
-            relax(x + 1, y - 1, *cell);
-            relax(x - 1, y + 1, *cell);
+            if (!cell->Visited)
+            {
+                cell->Visited = true;
+                int x = cell->X, y = cell->Y;
+                relax(x + 1, y, *cell);
+                relax(x, y + 1, *cell);
+                relax(x - 1, y, *cell);
+                relax(x, y - 1, *cell);
+                relax(x - 1, y - 1, *cell);
+                relax(x + 1, y + 1, *cell);
+                relax(x + 1, y - 1, *cell);
+                relax(x - 1, y + 1, *cell);
+            }
         }
     }
 
